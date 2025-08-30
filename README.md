@@ -3,15 +3,15 @@
 
 一个充满趣味和互动的卡通风格登录页面，采用糖果派对主题设计，提供多种有趣的交互效果和动画。
 
+**🌐 在线预览：[糖果派对登录页面](https://a97242689.github.io/fun-login-page/)**
+
+**📖 英文文档：[English Documentation](README-EN.md)**
+
 ![糖果派对登录页面](./candy.png)
 
 ![朋克风格登录页面](./punk.png)
 
 ## 🎨 项目特色
-
-**🌐 在线预览：[糖果派对登录页面](https://a97242689.github.io/fun-login-page/)**
-
-**📖 英文文档：[English Documentation](README-EN.md)**
 
 ### 视觉风格
 - **糖果主题设计**：采用粉色、紫色、蓝色渐变背景，营造梦幻糖果世界
