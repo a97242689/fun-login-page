@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>糖果派对登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700&display=swap');
+        .candy-font { font-family: 'Fredoka One', cursive; }
+        .content-font { font-family: 'Nunito', sans-serif; }
+        
+        .candy-shadow {
+            box-shadow: 0 8px 32px rgba(255, 105, 180, 0.3), 0 4px 16px rgba(255, 182, 193, 0.2);
+        }
+        
+        .candy-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 105, 180, 0.8)); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.8s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3) translateY(50px); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        .interactive-element {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        
+        .mouse-follower {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .balloon {
+            position: fixed;
+            pointer-events: all;
+            z-index: 1;
+            cursor: grab;
+        }
+        
+        .balloon-body {
+            width: 40px;
+            height: 50px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+        
+        .balloon-string {
+            position: absolute;
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(150,150,150,0.8), rgba(150,150,150,0.3));
+            left: 50%;
+            bottom: -60px;
+            transform: translateX(-50%);
+        }
+        
+        .balloon-highlight {
+            position: absolute;
+            width: 12px;
+            height: 16px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            top: 8px;
+            left: 8px;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0px) translateX(0px) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-120vh) translateX(var(--wind-drift, 0px)) rotate(var(--wind-rotation, 0deg));
+                opacity: 0;
+            }
+        }
+        
+        @keyframes sway {
+            0%, 100% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+        }
+        
+        .balloon-floating {
+            animation: floatUp var(--duration, 12s) linear forwards;
+        }
+        
+        .balloon-hover {
+            animation: sway 2s ease-in-out infinite;
+            animation-play-state: running;
+        }
+        
+        .balloon-paused {
+            animation-play-state: paused !important;
+        }
+        
+        .balloon-dragging {
+            animation: none !important;
+            cursor: grabbing;
+        }
+        
+        .balloon-popping {
+            animation: balloonPop 0.3s ease-out forwards;
+        }
+        
+        .balloon-falling {
+            animation: balloonFall 2s ease-in forwards;
+        }
+        
+        @keyframes balloonPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); opacity: 0.8; }
+            100% { transform: scale(0.1); opacity: 0; }
+        }
+        
+        @keyframes balloonFall {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(180deg); opacity: 0; }
+        }
+        
+        @keyframes stringFall1 {
+            0% { transform: translateY(0px) rotate(0deg) translateX(0px); opacity: 1; }
+            30% { transform: translateY(25vh) rotate(30deg) translateX(-10px); }
+            100% { transform: translateY(100vh) rotate(75deg) translateX(-20px); opacity: 0.2; }
+        }
+        
+        @keyframes stringFall2 {
+            0% { transform: translateY(0px) rotate(0deg) translateX(0px); opacity: 1; }
+            40% { transform: translateY(35vh) rotate(-60deg) translateX(15px); }
+            100% { transform: translateY(100vh) rotate(-120deg) translateX(30px); opacity: 0.3; }
+        }
+        
+        @keyframes stringFall3 {
+            0% { transform: translateY(0px) rotate(0deg) translateX(0px); opacity: 1; }
+            20% { transform: translateY(20vh) rotate(15deg) translateX(5px); }
+            100% { transform: translateY(100vh) rotate(45deg) translateX(10px); opacity: 0.4; }
+        }
+        
+        @keyframes stringFall4 {
+            0% { transform: translateY(0px) rotate(0deg) translateX(0px); opacity: 1; }
+            25% { transform: translateY(30vh) rotate(-45deg) translateX(-15px); }
+            100% { transform: translateY(100vh) rotate(-90deg) translateX(-25px); opacity: 0.1; }
+        }
+        
+        @keyframes stringFall5 {
+            0% { transform: translateY(0px) rotate(0deg) translateX(0px); opacity: 1; }
+            50% { transform: translateY(40vh) rotate(90deg) translateX(20px); }
+            100% { transform: translateY(100vh) rotate(180deg) translateX(25px); opacity: 0.5; }
+        }
+        
+        .string-falling-1 { animation: stringFall1 2.2s ease-in forwards; }
+        .string-falling-2 { animation: stringFall2 2.8s ease-out forwards; }
+        .string-falling-3 { animation: stringFall3 2.5s linear forwards; }
+        .string-falling-4 { animation: stringFall4 3.0s ease-in-out forwards; }
+        .string-falling-5 { animation: stringFall5 2.7s ease-in forwards; }
+        
+        @keyframes textBlink {
+            0% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1);
+                color: #ff6b6b;
+            }
+            20% { 
+                opacity: 0.2; 
+                transform: translate(-50%, -50%) scale(1.3);
+                color: #ff1744;
+            }
+            40% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(0.8);
+                color: #ffc107;
+            }
+            60% { 
+                opacity: 0.4; 
+                transform: translate(-50%, -50%) scale(1.2);
+                color: #4caf50;
+            }
+            80% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(0.9);
+                color: #2196f3;
+            }
+            100% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1);
+                color: #ff6b6b;
+            }
+        }
+        
+        .surprise-text {
+            animation: textBlink 0.8s ease-in-out infinite;
+        }
+        
+        .balloon-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.3);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color: #999;
+            z-index: 2000;
+            pointer-events: none;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .balloon-counter.visible {
+            opacity: 1;
+        }
+        
+        .balloon-counter.flip {
+            animation: counterFlip 0.3s ease-in-out;
+        }
+        
+        @keyframes counterFlip {
+            0% { transform: scaleX(1); }
+            50% { transform: scaleX(-1); }
+            100% { transform: scaleX(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-300 via-purple-300 to-blue-300 overflow-hidden relative">
+    <!-- 背景装饰糖果 -->
+    <div class="absolute inset-0 pointer-events-none">
+        <!-- 大糖果装饰 -->
+        <div class="absolute top-10 left-10 w-16 h-16 bg-gradient-to-r from-red-400 to-pink-500 rounded-full float-animation opacity-70"></div>
+        <div class="absolute top-20 right-16 w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full float-animation opacity-60" style="animation-delay: 0.5s;"></div>
+        <div class="absolute bottom-20 left-20 w-20 h-20 bg-gradient-to-r from-green-400 to-teal-500 rounded-full float-animation opacity-50" style="animation-delay: 1s;"></div>
+        <div class="absolute bottom-32 right-10 w-14 h-14 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full float-animation opacity-60" style="animation-delay: 1.5s;"></div>
+        
+        <!-- 小糖果点缀 -->
+        <div class="absolute top-1/3 left-1/4 w-8 h-8 bg-gradient-to-r from-pink-400 to-red-400 rounded-full float-animation opacity-40" style="animation-delay: 2s;"></div>
+        <div class="absolute top-2/3 right-1/4 w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full float-animation opacity-50" style="animation-delay: 2.5s;"></div>
+        <div class="absolute top-1/2 left-1/6 w-10 h-10 bg-gradient-to-r from-yellow-300 to-pink-400 rounded-full float-animation opacity-45" style="animation-delay: 3s;"></div>
+        
+        <!-- 鼠标跟随元素 -->
+        <div class="interactive-element mouse-follower absolute w-12 h-12 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full opacity-60" data-follow-distance="150" style="top: 15%; left: 30%;"></div>
+        <div class="interactive-element mouse-follower absolute w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full opacity-50" data-follow-distance="120" style="top: 40%; right: 25%;"></div>
+        <div class="interactive-element mouse-follower absolute w-16 h-16 bg-gradient-to-r from-green-300 to-emerald-400 rounded-full opacity-40" data-follow-distance="180" style="bottom: 25%; left: 15%;"></div>
+        <div class="interactive-element mouse-follower absolute w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-full opacity-55" data-follow-distance="100" style="top: 60%; left: 70%;"></div>
+        <div class="interactive-element mouse-follower absolute w-6 h-6 bg-gradient-to-r from-indigo-400 to-purple-600 rounded-full opacity-65" data-follow-distance="90" style="bottom: 40%; right: 30%;"></div>
+        <div class="interactive-element mouse-follower absolute w-14 h-14 bg-gradient-to-r from-teal-300 to-cyan-500 rounded-full opacity-45" data-follow-distance="160" style="top: 20%; right: 15%;"></div>
+        
+        <!-- 额外的装饰性跟随元素 -->
+        <div class="interactive-element mouse-follower absolute w-5 h-5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-70" data-follow-distance="80" style="top: 80%; left: 40%;"></div>
+        <div class="interactive-element mouse-follower absolute w-9 h-9 bg-gradient-to-r from-rose-400 to-pink-600 rounded-full opacity-60" data-follow-distance="130" style="top: 35%; left: 10%;"></div>
+    </div>
+    
+    <!-- 气球容器 -->
+    <div id="balloon-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+    
+    <!-- 气球计数器 -->
+    <div class="balloon-counter">0</div>
+
+    <!-- 主要内容 -->
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-3xl p-8 w-full max-w-md candy-shadow bounce-in">
+            <!-- 标题 -->
+            <div class="text-center mb-8">
+                <h1 class="candy-font text-4xl bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent candy-glow mb-2">
+                    糖果派对
+                </h1>
+                <p class="content-font text-gray-600 text-lg">欢迎回来！</p>
+            </div>
+
+            <!-- 登录表单 -->
+            <form class="space-y-6">
+                <!-- 用户名输入 -->
+                <div class="relative">
+                    <label class="content-font font-semibold text-gray-700 block mb-2">用户名</label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            placeholder="请输入用户名"
+                            class="content-font w-full px-4 py-3 pl-12 bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-pink-200 rounded-2xl focus:outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-200 transition-all duration-300"
+                        >
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 密码输入 -->
+                <div class="relative">
+                    <label class="content-font font-semibold text-gray-700 block mb-2">密码</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            placeholder="请输入密码"
+                            class="content-font w-full px-4 py-3 pl-12 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-2xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-200 transition-all duration-300"
+                        >
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 记住我和忘记密码 -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only">
+                        <div class="relative">
+                            <div class="w-5 h-5 bg-gradient-to-r from-pink-300 to-purple-300 rounded border-2 border-pink-400"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg class="w-3 h-3 text-white opacity-0 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <span class="content-font ml-2 text-gray-600">记住我</span>
+                    </label>
+                    <a href="#" class="content-font text-pink-500 hover:text-pink-600 transition-colors duration-200">忘记密码？</a>
+                </div>
+
+                <!-- 登录按钮 -->
+                <button 
+                    type="submit"
+                    class="content-font w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-2xl hover:from-pink-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 candy-shadow"
+                >
+                    立即登录 🍭
+                </button>
+
+                <!-- 分割线 -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="content-font px-4 bg-white text-gray-500">或者使用</span>
+                    </div>
+                </div>
+
+                <!-- 社交登录按钮 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button 
+                        type="button"
+                        class="content-font flex items-center justify-center py-3 px-4 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-2xl hover:from-red-500 hover:to-pink-600 transform hover:scale-105 transition-all duration-300"
+                    >
+                        <span class="mr-2">🍎</span>
+                        微信
+                    </button>
+                    <button 
+                        type="button"
+                        class="content-font flex items-center justify-center py-3 px-4 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-2xl hover:from-blue-500 hover:to-purple-600 transform hover:scale-105 transition-all duration-300"
+                    >
+                        <span class="mr-2">📱</span>
+                        手机
+                    </button>
+                </div>
+
+                <!-- 注册链接 -->
+                <div class="text-center mt-6">
+                    <p class="content-font text-gray-600">
+                        还没有账号？ 
+                        <a href="#" class="text-pink-500 hover:text-pink-600 font-semibold transition-colors duration-200">
+                            立即注册 🎉
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 复选框交互
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checkmark = this.parentElement.querySelector('svg');
+                if (this.checked) {
+                    checkmark.classList.remove('opacity-0');
+                    checkmark.classList.add('opacity-100');
+                } else {
+                    checkmark.classList.remove('opacity-100');
+                    checkmark.classList.add('opacity-0');
+                }
+            });
+        });
+
+        // 表单提交处理
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('🍭 登录功能演示！糖果派对欢迎您！');
+        });
+
+        // 鼠标跟随效果
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function updateFollowers() {
+            const followers = document.querySelectorAll('.mouse-follower');
+            
+            followers.forEach(follower => {
+                const rect = follower.getBoundingClientRect();
+                const elementCenterX = rect.left + rect.width / 2;
+                const elementCenterY = rect.top + rect.height / 2;
+                
+                const deltaX = mouseX - elementCenterX;
+                const deltaY = mouseY - elementCenterY;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                const maxDistance = parseInt(follower.dataset.followDistance) || 150;
+                
+                if (distance < maxDistance && distance > 20) {
+                    const moveDistance = Math.min(distance * 0.1, 30);
+                    const moveX = (deltaX / distance) * moveDistance;
+                    const moveY = (deltaY / distance) * moveDistance;
+                    
+                    follower.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.1)`;
+                    follower.style.opacity = '0.8';
+                } else {
+                    follower.style.transform = 'translate(0px, 0px) scale(1)';
+                    follower.style.opacity = follower.style.opacity || '0.5';
+                }
+            });
+            
+            requestAnimationFrame(updateFollowers);
+        }
+        
+        updateFollowers(0);
+        
+        // 更新气球计数器显示
+        function updateBalloonCounter() {
+            const counter = document.querySelector('.balloon-counter');
+            if (counter) {
+                counter.textContent = balloonPopCount;
+                
+                // 只有在扎破气球后才显示
+                if (balloonPopCount > 0) {
+                    counter.classList.add('visible');
+                    
+                    // 添加水平翻转效果
+                    counter.classList.add('flip');
+                    setTimeout(() => counter.classList.remove('flip'), 300);
+                } else {
+                    counter.classList.remove('visible');
+                }
+            }
+        }
+        
+        // 气球系统配置
+        const balloonConfig = {
+            colors: [
+                ['#ff6b6b', '#ff8e8e'], ['#4ecdc4', '#45b7aa'], ['#45b7d1', '#3498db'],
+                ['#96ceb4', '#6ab7aa'], ['#feca57', '#ff9ff3'], ['#ff9ff3', '#54a0ff'],
+                ['#5f27cd', '#341f97'], ['#ff6348', '#ff7675']
+            ],
+            stringAnimations: ['string-falling-1', 'string-falling-2', 'string-falling-3', 'string-falling-4', 'string-falling-5'],
+            surpriseTexts: [
+                '我炸了', '吃了没？', '666', '老铁好', '富强', '民主', '敬业', '友善',
+                '哇哇', '惊喜', '有灰机', '哈哈', '笑死了', '炸裂', '闪亮', '美丽', '干啥？', '???', '哦嚯',
+                '么么哒', '萌萌哒', '给力', '赞爆', '超棒', '完美', '惊艳',
+                '哎呀', '哇塞', '天啊', '太棒了', '好赞', '厉害', '牛逼', '绝了',
+                '埋南极', '埋北极', '浪漫', '梦幻', 'YYDS', '栓Q', '奇迹',  '鸡你太美',
+                '开心', '幸福', '满足', '陶醉', '兴奋', '激动', '欢乐', '愉悦',
+                '哈皮', '开森', '美滋滋', '乐呵呵', '走一个', '奥里给', '盖亚', '芜湖起飞'
+            ]
+        };
+        
+        // 气球计数器
+        let balloonPopCount = 0;
+        
+        function createBalloon() {
+            const container = document.getElementById('balloon-container');
+            if (!container) {
+                return;
+            }
+            
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            
+            // 随机颜色
+            const colorPair = balloonConfig.colors[Math.floor(Math.random() * balloonConfig.colors.length)];
+            
+            // 随机起始位置
+            const startX = Math.random() * (window.innerWidth - 60);
+            
+            // 随机风向偏移和持续时间
+            const windDrift = (Math.random() - 0.5) * 200;
+            const windRotation = (Math.random() - 0.5) * 30;
+            const duration = 8 + Math.random() * 4; // 缩短时间便于测试
+            
+            // 设置样式和变量 - 从屏幕底部开始（测试可见位置）
+            balloon.style.cssText = `
+                position: fixed;
+                left: ${startX}px;
+                top: 85vh;
+                z-index: 1000;
+                pointer-events: all;
+                cursor: grab;
+                --wind-drift: ${windDrift}px;
+                --wind-rotation: ${windRotation}deg;
+                --duration: ${duration}s;
+            `;
+            
+            balloon.innerHTML = `
+                <div class="balloon-body" style="background: linear-gradient(135deg, ${colorPair[0]}, ${colorPair[1]});">
+                    <div class="balloon-highlight"></div>
+                </div>
+                <div class="balloon-string"></div>
+            `;
+            
+            container.appendChild(balloon);
+            
+            // 等待一帧再开始动画
+            requestAnimationFrame(() => {
+                balloon.classList.add('balloon-floating');
+            });
+            
+            // 添加交互事件
+            addBalloonInteraction(balloon, duration);
+            
+            // 优化气球清理
+            const balloonCleanup = () => balloon.parentNode?.removeChild(balloon);
+            setTimeout(balloonCleanup, duration * 1000);
+        }
+        
+        // 优化气球生成系统
+        function startBalloonSystem() {
+            let balloonCount = 0;
+            const maxBalloons = 8; // 限制最大气球数量
+            
+            setInterval(() => {
+                // 检查当前气球数量
+                const currentBalloons = document.querySelectorAll('.balloon').length;
+                
+                if (currentBalloons < maxBalloons && Math.random() < 0.7) {
+                    createBalloon();
+                }
+            }, 3000 + Math.random() * 4000);
+        }
+        
+        // 启动气球系统
+        setTimeout(startBalloonSystem, 2000); // 2秒后开始
+        
+        
+        
+        // 立即生成几个气球作为初始效果
+        setTimeout(() => {
+            createBalloon();
+        }, 2000);
+        setTimeout(() => createBalloon(), 4000);
+        setTimeout(() => createBalloon(), 6000);
+        
+        // 气球交互功能
+        function addBalloonInteraction(balloon, duration) {
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+            let originalPosition = { x: 0, y: 0 };
+            let animationPaused = false;
+            let clickCount = 0;
+            let clickTimer = null;
+            
+            // 鼠标悬停事件
+            balloon.addEventListener('mouseenter', function() {
+                if (!isDragging) {
+                    // 暂停上升动画
+                    balloon.classList.add('balloon-paused');
+                    animationPaused = true;
+                }
+            });
+            
+            balloon.addEventListener('mouseleave', function() {
+                if (!isDragging) {
+                    // 恢复上升动画
+                    balloon.classList.remove('balloon-paused');
+                    animationPaused = false;
+                }
+            });
+            
+            // 鼠标按下开始拖拽或双击检测
+            balloon.addEventListener('mousedown', function(e) {
+                clickCount++;
+                
+                if (clickCount === 1) {
+                    // 保存第一次点击的事件信息
+                    const savedEvent = {
+                        clientX: e.clientX,
+                        clientY: e.clientY,
+                        target: e.target
+                    };
+                    
+                    clickTimer = setTimeout(() => {
+                        // 单击 - 开始拖拽
+                        startDrag(savedEvent);
+                        // 动态添加事件监听器
+                        document.addEventListener('mousemove', handleMouseMove);
+                        document.addEventListener('mouseup', handleMouseUp);
+                        clickCount = 0;
+                    }, 250); // 250ms内没有第二次点击就是单击
+                } else if (clickCount === 2) {
+                    // 双击 - 气球爆炸
+                    clearTimeout(clickTimer);
+                    popBalloon();
+                    clickCount = 0;
+                }
+                
+                e.preventDefault();
+            });
+            
+            function startDrag(e) {
+                // 先获取当前实际位置
+                const rect = balloon.getBoundingClientRect();
+                
+                isDragging = true;
+                
+                // 立即固定位置，在移除动画前
+                balloon.style.top = rect.top + 'px';
+                balloon.style.left = rect.left + 'px';
+                balloon.style.bottom = 'auto';
+                balloon.style.transform = 'none'; // 清除任何transform
+                
+                // 然后移除动画类
+                balloon.classList.add('balloon-dragging');
+                balloon.classList.remove('balloon-floating', 'balloon-hover', 'balloon-paused');
+                
+                // 再次确认位置没有变化
+                const rectAfter = balloon.getBoundingClientRect();
+                if (Math.abs(rectAfter.top - rect.top) > 1) {
+                    balloon.style.top = rect.top + 'px';
+                    balloon.style.left = rect.left + 'px';
+                }
+                
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                // 记录当前位置
+                originalPosition.x = rect.left;
+                originalPosition.y = rect.top;
+            }
+            
+            function popBalloon() {
+                balloonPopCount++;
+                
+                // 立即获取当前位置并固定
+                const rect = balloon.getBoundingClientRect();
+                balloon.style.top = rect.top + 'px';
+                balloon.style.left = rect.left + 'px';
+                balloon.style.bottom = 'auto';
+                balloon.style.transform = 'none';
+                
+                // 停止所有动画和交互
+                balloon.classList.remove('balloon-floating', 'balloon-hover', 'balloon-paused', 'balloon-dragging');
+                balloon.style.pointerEvents = 'none';
+                
+                // 气球爆炸效果
+                balloon.classList.add('balloon-popping');
+                
+                setTimeout(() => {
+                    createBalloonFragments(balloon);
+                    balloon.parentNode?.removeChild(balloon);
+                }, 300);
+            }
+            
+            function createBalloonFragments(originalBalloon) {
+                const rect = originalBalloon.getBoundingClientRect();
+                const container = document.getElementById('balloon-container');
+                
+                // 创建气球线碎片（与原始线条样式一致）
+                const balloonString = document.createElement('div');
+                balloonString.style.cssText = `
+                    position: fixed;
+                    left: ${rect.left + 20}px;
+                    top: ${rect.top + 50}px;
+                    width: 1px;
+                    height: 60px;
+                    background: linear-gradient(to bottom, rgba(150,150,150,0.8), rgba(150,150,150,0.3));
+                    z-index: 1000;
+                    pointer-events: none;
+                    transform-origin: top center;
+                `;
+                
+                container.appendChild(balloonString);
+                
+                // 随机选择一个线条下落动画
+                const randomAnimation = balloonConfig.stringAnimations[Math.floor(Math.random() * balloonConfig.stringAnimations.length)];
+                balloonString.classList.add(randomAnimation);
+                
+                // 优化线条清理
+                const stringCleanup = () => balloonString.parentNode?.removeChild(balloonString);
+                setTimeout(stringCleanup, 3000);
+                
+                // 创建3-5个气球碎片
+                const fragmentCount = 3 + Math.floor(Math.random() * 3);
+                
+                for (let i = 0; i < fragmentCount; i++) {
+                    const fragment = document.createElement('div');
+                    fragment.style.cssText = `
+                        position: fixed;
+                        left: ${rect.left + Math.random() * 40}px;
+                        top: ${rect.top + Math.random() * 50}px;
+                        width: ${5 + Math.random() * 10}px;
+                        height: ${5 + Math.random() * 10}px;
+                        background: ${['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'][Math.floor(Math.random() * 5)]};
+                        border-radius: 50%;
+                        z-index: 1000;
+                        pointer-events: none;
+                    `;
+                    
+                    container.appendChild(fragment);
+                    
+                    fragment.classList.add('balloon-falling');
+                    const fragmentCleanup = () => fragment.parentNode?.removeChild(fragment);
+                    setTimeout(fragmentCleanup, 2000);
+                }
+                
+                // 创建惊喜文字效果
+                createSurpriseText(rect, container);
+                
+                // 更新计数器
+                updateBalloonCounter();
+            }
+            
+            function createSurpriseText(rect, container) {
+                const randomText = balloonConfig.surpriseTexts[Math.floor(Math.random() * balloonConfig.surpriseTexts.length)];
+                
+                const textElement = document.createElement('div');
+                // 计算气球中心位置
+                const centerX = rect.left + (rect.width / 2);
+                const centerY = rect.top + (rect.height / 2);
+                
+                textElement.style.cssText = `
+                    position: fixed;
+                    left: ${centerX}px;
+                    top: ${centerY}px;
+                    font-size: 14px;
+                    font-weight: normal;
+                    color: #ff6b6b;
+                    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+                    z-index: 1001;
+                    pointer-events: none;
+                    white-space: nowrap;
+                    font-family: 'Microsoft YaHei', sans-serif;
+                    transform: translate(-50%, -50%);
+                `;
+                
+                textElement.textContent = randomText;
+                container.appendChild(textElement);
+                
+                // 添加闪烁动画
+                textElement.classList.add('surprise-text');
+                
+                // 优化清理机制
+                const cleanup = () => {
+                    textElement.style.transition = 'opacity 0.5s ease-out';
+                    textElement.style.opacity = '0';
+                    setTimeout(() => textElement.parentNode?.removeChild(textElement), 500);
+                };
+                setTimeout(cleanup, 3000);
+            }
+            
+            // 使用事件委托优化性能
+            const handleMouseMove = (e) => {
+                if (isDragging) {
+                    const newX = e.clientX - dragOffset.x;
+                    const newY = e.clientY - dragOffset.y;
+                    
+                    balloon.style.left = newX + 'px';
+                    balloon.style.top = newY + 'px';
+                    balloon.style.bottom = 'auto';
+                }
+            };
+            
+            const handleMouseUp = () => {
+                if (isDragging) {
+                    isDragging = false;
+                    balloon.classList.remove('balloon-dragging');
+                    
+                    const currentRect = balloon.getBoundingClientRect();
+                    const remainingHeight = currentRect.top + 100;
+                    
+                    const minSpeed = 30;
+                    const remainingTime = Math.max(remainingHeight / minSpeed, 0.5);
+                    
+                    if (remainingHeight < 20) {
+                        balloon.parentNode?.removeChild(balloon);
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                        return;
+                    }
+                    
+                    balloon.style.top = currentRect.top + 'px';
+                    balloon.style.left = currentRect.left + 'px';
+                    balloon.style.setProperty('--duration', remainingTime + 's');
+                    
+                    balloon.classList.remove('balloon-floating');
+                    requestAnimationFrame(() => {
+                        balloon.classList.add('balloon-floating');
+                    });
+                    
+                    // 清理事件监听器
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                }
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络朋克登录 - CYBER INTERACTIVE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neon: {
+                            cyan: '#00ffff',
+                            magenta: '#ff00ff',
+                            yellow: '#ffff00',
+                            lime: '#00ff00',
+                            blue: '#0099ff',
+                            purple: '#9900ff',
+                            red: '#ff0066',
+                            orange: '#ff3300'
+                        }
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'sans-serif'],
+                        'mono': ['Courier New', 'monospace']
+                    },
+                    animation: {
+                        'data-flow': 'data-flow 3s linear infinite',
+                        'energy-pulse': 'energy-pulse 2s ease-in-out infinite',
+                        'hologram-flicker': 'hologram-flicker 4s ease-in-out infinite',
+                        'node-pulse': 'node-pulse 1.5s ease-in-out infinite',
+                        'circuit-glow': 'circuit-glow 3s ease-in-out infinite alternate',
+                        'glitch-text': 'glitch-text 0.3s infinite',
+                        'neon-flicker': 'neon-flicker 1.5s infinite alternate',
+                        'scan-line': 'scan-line 2s linear infinite',
+                        'digital-rain': 'digital-rain 10s linear infinite',
+                        'pulse-border': 'pulse-border 2s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Courier+New&display=swap');
+        
+        @keyframes glitch-text {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-2px) translateY(1px); }
+            40% { transform: translateX(-1px) translateY(-1px); }
+            60% { transform: translateX(1px) translateY(2px); }
+            80% { transform: translateX(2px) translateY(-1px); }
+            100% { transform: translateX(0); }
+        }
+        
+        @keyframes neon-flicker {
+            0%, 100% {
+                text-shadow: 
+                    0 0 5px currentColor,
+                    0 0 10px currentColor,
+                    0 0 15px currentColor,
+                    0 0 20px currentColor,
+                    0 0 40px currentColor;
+                opacity: 1;
+            }
+            50% {
+                text-shadow: 
+                    0 0 2px currentColor,
+                    0 0 5px currentColor,
+                    0 0 8px currentColor,
+                    0 0 12px currentColor,
+                    0 0 20px currentColor;
+                opacity: 0.8;
+            }
+        }
+        
+        @keyframes scan-line {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        @keyframes digital-rain {
+            0% { transform: translateY(-100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% {
+                box-shadow: 0 0 5px #00ffff, inset 0 0 5px #00ffff;
+            }
+            50% {
+                box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff, inset 0 0 10px #ff00ff;
+            }
+        }
+        
+        @keyframes data-flow {
+            0% { transform: translateX(-100px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(calc(100vw + 100px)); opacity: 0; }
+        }
+        
+        @keyframes energy-pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 20px currentColor;
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 0 40px currentColor, 0 0 60px currentColor;
+            }
+        }
+        
+        @keyframes hologram-flicker {
+            0%, 100% { opacity: 0.8; }
+            25% { opacity: 0.3; }
+            50% { opacity: 0.9; }
+            75% { opacity: 0.4; }
+        }
+        
+        @keyframes node-pulse {
+            0%, 100% { 
+                background: rgba(0, 255, 255, 0.3);
+                box-shadow: 0 0 10px #00ffff;
+            }
+            50% { 
+                background: rgba(255, 0, 255, 0.6);
+                box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+            }
+        }
+        
+        @keyframes circuit-glow {
+            from {
+                filter: drop-shadow(0 0 5px currentColor);
+            }
+            to {
+                filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 25px currentColor);
+            }
+        }
+        
+        .interactive-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #00ffff, transparent);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+        
+        .interactive-node:hover {
+            transform: scale(2);
+            box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff;
+        }
+        
+        .data-stream {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            border-radius: 50%;
+            animation: data-flow linear infinite;
+            z-index: 3;
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+            opacity: 0.6;
+            z-index: 2;
+        }
+        
+        .energy-orb {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1), transparent);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            animation: energy-pulse infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .cyberpunk-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 0, 0.2) 0%, transparent 50%),
+                linear-gradient(45deg, rgba(0, 0, 0, 0.9), rgba(20, 0, 40, 0.9));
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .hologram-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: hologram-flicker infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .scan-line-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, #ff00ff, #00ffff, transparent);
+            animation: scan-line 3s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+            box-shadow: 0 0 20px #00ffff;
+        }
+        
+        .digital-rain-char {
+            position: absolute;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0.7;
+            animation: digital-rain linear infinite;
+            text-shadow: 0 0 5px #00ff00;
+            pointer-events: none;
+        }
+        
+        .neural-input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .neural-input::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .neural-input:focus {
+            border-color: #ff00ff;
+            box-shadow: 
+                0 0 20px rgba(255, 0, 255, 0.5),
+                0 0 40px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(255, 0, 255, 0.1);
+            text-shadow: 0 0 5px #ffffff;
+        }
+        
+        .neural-input:focus::before {
+            left: 100%;
+        }
+        
+        .neural-input::after {
+            content: attr(placeholder);
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #00ffff;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        .neural-input:focus::after,
+        .neural-input:not(:placeholder-shown)::after {
+            opacity: 0;
+        }
+        
+        .cyber-panel {
+            background: 
+                linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 0, 40, 0.8) 50%, rgba(0, 0, 0, 0.9) 100%);
+            backdrop-filter: blur(15px);
+            border: 2px solid transparent;
+            border-image: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff) 1;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.3),
+                0 0 60px rgba(255, 0, 255, 0.2),
+                inset 0 0 30px rgba(0, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff);
+            z-index: -1;
+            animation: pulse-border infinite;
+        }
+        
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            animation: scan-line 4s linear infinite;
+        }
+        
+        .access-button {
+            background: linear-gradient(135deg, #000000, #330066, #000000);
+            border: 3px solid #00ffff;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px #ffffff;
+        }
+        
+        .access-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, #00ffff, #ff00ff, #ffff00, #00ff00, #00ffff);
+            animation: circuit-glow 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .access-button::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: linear-gradient(135deg, #000000, #220044, #000000);
+            z-index: -1;
+        }
+        
+        .access-button:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.5),
+                0 0 60px rgba(255, 0, 255, 0.3);
+            text-shadow: 
+                0 0 5px #ffffff,
+                0 0 10px #00ffff,
+                0 0 15px #ff00ff;
+        }
+        
+        .access-button:active {
+            transform: scale(0.98);
+        }
+        
+        .mouse-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #00ffff, transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            mix-blend-mode: screen;
+        }
+        
+        @media (max-width: 640px) {
+            .hologram-grid {
+                background-size: 20px 20px;
+            }
+            .energy-orb {
+                width: 60px;
+                height: 60px;
+            }
+            .interactive-node {
+                width: 8px;
+                height: 8px;
+            }
+        }
+        
+        @media (hover: none) and (pointer: coarse) {
+            .interactive-node:active {
+                transform: scale(2);
+                box-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black overflow-x-hidden relative">
+    <!-- Holographic Grid Background -->
+    <div class="hologram-grid"></div>
+    
+    <!-- Interactive Network Nodes -->
+    <div id="networkContainer" class="fixed inset-0 pointer-events-none">
+        <!-- Nodes will be generated by JavaScript -->
+    </div>
+    
+    <!-- Energy Orbs -->
+    <div class="energy-orb" style="top: 10%; left: 15%; animation-delay: 0s;"></div>
+    <div class="energy-orb" style="top: 70%; right: 20%; animation-delay: 1s;"></div>
+    <div class="energy-orb" style="top: 40%; left: 80%; animation-delay: 2s;"></div>
+    
+    <!-- Mouse Trail Container -->
+    <div id="mouseTrailContainer"></div>
+    
+    <!-- Main Content -->
+    <div class="relative z-20 min-h-screen flex flex-col justify-center py-8 px-4 sm:py-12 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8 sm:mb-12">
+            <div class="relative inline-block">
+                <h1 class="font-cyber text-5xl sm:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-neon-magenta to-neon-yellow animate-pulse">
+                    NEXUS
+                </h1>
+                <div class="absolute inset-0 font-cyber text-5xl sm:text-7xl font-bold text-neon-cyan opacity-50 animate-hologram-flicker">
+                    NEXUS
+                </div>
+            </div>
+            <p class="mt-4 font-mono text-base sm:text-lg text-neon-lime tracking-widest">
+                神经网络接入系统
+            </p>
+            <div class="mt-2 text-xs sm:text-sm text-neon-yellow font-mono animate-pulse">
+                [ NEURAL NETWORK ACCESS SYSTEM ]
+            </div>
+        </div>
+        
+        <!-- Login Container -->
+        <div class="max-w-md mx-auto w-full">
+            <div class="cyber-glass rounded-2xl p-6 sm:p-8 relative">
+                <!-- Interactive Decoration -->
+                <div class="absolute top-4 right-4 w-3 h-3 bg-neon-lime rounded-full animate-node-pulse"></div>
+                <div class="absolute bottom-4 left-4 w-3 h-3 bg-neon-magenta rounded-full animate-node-pulse" style="animation-delay: 0.5s;"></div>
+                
+                <form class="space-y-6" id="accessForm">
+                    <!-- User ID Input -->
+                    <div>
+                        <label for="userId" class="block text-sm font-semibold text-neon-cyan font-mono mb-3 tracking-wider">
+                            用户节点 ID
+                        </label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="userId" 
+                                   name="userId"
+                                   required
+                                   class="neural-input w-full px-4 py-3 bg-transparent text-white font-mono text-lg placeholder-gray-400 focus:outline-none rounded-lg transition-all duration-300"
+                                   placeholder="输入节点标识符...">
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                <div class="w-2 h-4 bg-neon-cyan animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Access Key Input -->
+                    <div>
+                        <label for="accessKey" class="block text-sm font-semibold text-neon-cyan font-mono mb-3 tracking-wider">
+                            访问密钥
+                        </label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="accessKey" 
+                                   name="accessKey"
+                                   required
+                                   class="neural-input w-full px-4 py-3 bg-transparent text-white font-mono text-lg placeholder-gray-400 focus:outline-none rounded-lg transition-all duration-300"
+                                   placeholder="输入神经密钥...">
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                                <div class="w-2 h-4 bg-neon-cyan animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Options -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <label class="flex items-center text-sm text-neon-lime font-mono cursor-pointer">
+                            <input type="checkbox" class="mr-2 w-4 h-4 bg-transparent border-2 border-neon-cyan rounded focus:ring-neon-cyan">
+                            保持神经连接
+                        </label>
+                        <a href="#" class="text-sm text-neon-yellow hover:text-neon-magenta transition-colors font-mono">
+                            忘记访问密钥？
+                        </a>
+                    </div>
+                    
+                    <!-- Access Button -->
+                    <button type="submit" 
+                            class="access-button w-full py-4 font-cyber text-lg font-bold text-white rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 relative">
+                        <span class="relative z-10 tracking-wider">启动神经连接</span>
+                    </button>
+                </form>
+                
+                <!-- System Status -->
+                <div class="mt-8 pt-6 border-t border-neon-cyan/30">
+                    <div class="grid grid-cols-2 gap-4 text-xs font-mono">
+                        <div class="text-center">
+                            <div class="text-neon-lime">网络状态</div>
+                            <div class="text-neon-cyan animate-pulse mt-1">在线</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-neon-lime">加密等级</div>
+                            <div class="text-neon-magenta animate-pulse mt-1">量子</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-neon-lime">延迟</div>
+                            <div class="text-neon-yellow animate-pulse mt-1" id="latencyDisplay">15ms</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-neon-lime">连接数</div>
+                            <div class="text-neon-red animate-pulse mt-1" id="connectionCount">2847</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Info -->
+        <div class="mt-8 text-center">
+            <div class="text-xs text-neon-cyan/60 font-mono space-y-1">
+                <div>NEXUS v4.2.1 | 神经网络协议 | 安全连接</div>
+                <div id="systemTime" class="text-neon-yellow">00:00:00 UTC</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive Network System
+        class InteractiveNetwork {
+            constructor() {
+                this.nodes = [];
+                this.connections = [];
+                this.container = document.getElementById('networkContainer');
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.init();
+            }
+            
+            init() {
+                this.createNodes();
+                this.createConnections();
+                this.bindEvents();
+                this.animate();
+            }
+            
+            createNodes() {
+                const nodeCount = window.innerWidth < 768 ? 8 : 15;
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const node = document.createElement('div');
+                    node.className = 'interactive-node';
+                    node.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+                    node.style.top = Math.random() * (window.innerHeight - 50) + 'px';
+                    node.style.pointerEvents = 'auto';
+                    
+                    const nodeData = {
+                        element: node,
+                        x: parseFloat(node.style.left),
+                        y: parseFloat(node.style.top),
+                        targetX: parseFloat(node.style.left),
+                        targetY: parseFloat(node.style.top),
+                        connections: []
+                    };
+                    
+                    this.nodes.push(nodeData);
+                    this.container.appendChild(node);
+                    
+                    // Node click interaction
+                    node.addEventListener('click', () => this.activateNode(nodeData));
+                    
+                    // Mouse hover effect
+                    node.addEventListener('mouseenter', () => {
+                        node.style.background = 'radial-gradient(circle, #ff00ff, transparent)';
+                        this.createDataStream(nodeData.x, nodeData.y);
+                    });
+                    
+                    node.addEventListener('mouseleave', () => {
+                        node.style.background = 'radial-gradient(circle, #00ffff, transparent)';
+                    });
+                }
+            }
+            
+            createConnections() {
+                this.nodes.forEach((node, index) => {
+                    const connectionsCount = Math.floor(Math.random() * 3) + 1;
+                    
+                    for (let i = 0; i < connectionsCount; i++) {
+                        const targetIndex = Math.floor(Math.random() * this.nodes.length);
+                        if (targetIndex !== index) {
+                            this.createConnection(node, this.nodes[targetIndex]);
+                        }
+                    }
+                });
+            }
+            
+            createConnection(node1, node2) {
+                const line = document.createElement('div');
+                line.className = 'connection-line';
+                
+                const distance = Math.sqrt(
+                    Math.pow(node2.x - node1.x, 2) + Math.pow(node2.y - node1.y, 2)
+                );
+                const angle = Math.atan2(node2.y - node1.y, node2.x - node1.x);
+                
+                line.style.width = distance + 'px';
+                line.style.left = node1.x + 'px';
+                line.style.top = node1.y + 'px';
+                line.style.transform = `rotate(${angle}rad)`;
+                line.style.transformOrigin = '0 50%';
+                
+                this.container.appendChild(line);
+                
+                node1.connections.push({ target: node2, line: line });
+            }
+            
+            activateNode(node) {
+                // Visual feedback
+                node.element.style.transform = 'scale(3)';
+                node.element.style.background = 'radial-gradient(circle, #ffff00, transparent)';
+                
+                // Create burst effect
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        this.createDataStream(node.x, node.y);
+                    }, i * 100);
+                }
+                
+                // Reset after animation
+                setTimeout(() => {
+                    node.element.style.transform = 'scale(1)';
+                    node.element.style.background = 'radial-gradient(circle, #00ffff, transparent)';
+                }, 1000);
+                
+                // Propagate activation to connected nodes
+                node.connections.forEach(connection => {
+                    setTimeout(() => {
+                        connection.line.style.background = 'linear-gradient(90deg, transparent, #ffff00, transparent)';
+                        setTimeout(() => {
+                            connection.line.style.background = 'linear-gradient(90deg, transparent, #00ffff, transparent)';
+                        }, 500);
+                    }, 200);
+                });
+            }
+            
+            createDataStream(startX, startY) {
+                const stream = document.createElement('div');
+                stream.className = 'data-stream';
+                stream.style.left = startX + 'px';
+                stream.style.top = startY + 'px';
+                stream.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                
+                this.container.appendChild(stream);
+                
+                setTimeout(() => {
+                    if (stream.parentNode) {
+                        stream.parentNode.removeChild(stream);
+                    }
+                }, 3000);
+            }
+            
+            bindEvents() {
+                // Mouse move interaction
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.clientX;
+                    this.mouseY = e.clientY;
+                    
+                    // Move nodes towards mouse
+                    this.nodes.forEach(node => {
+                        const distance = Math.sqrt(
+                            Math.pow(e.clientX - node.x, 2) + Math.pow(e.clientY - node.y, 2)
+                        );
+                        
+                        if (distance < 150) {
+                            const force = (150 - distance) / 150;
+                            const angle = Math.atan2(e.clientY - node.y, e.clientX - node.x);
+                            
+                            node.targetX = node.x + Math.cos(angle) * force * 20;
+                            node.targetY = node.y + Math.sin(angle) * force * 20;
+                        } else {
+                            node.targetX = node.x;
+                            node.targetY = node.y;
+                        }
+                    });
+                    
+                    this.createMouseTrail(e.clientX, e.clientY);
+                });
+                
+                // Window resize
+                window.addEventListener('resize', () => {
+                    this.container.innerHTML = '';
+                    this.nodes = [];
+                    this.connections = [];
+                    this.init();
+                });
+            }
+            
+            createMouseTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.className = 'mouse-trail';
+                trail.style.left = x + 'px';
+                trail.style.top = y + 'px';
+                
+                document.getElementById('mouseTrailContainer').appendChild(trail);
+                
+                trail.animate([
+                    { transform: 'scale(1)', opacity: 1 },
+                    { transform: 'scale(0)', opacity: 0 }
+                ], {
+                    duration: 500,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    if (trail.parentNode) {
+                        trail.parentNode.removeChild(trail);
+                    }
+                };
+            }
+            
+            animate() {
+                // Smooth node movement
+                this.nodes.forEach(node => {
+                    node.x += (node.targetX - node.x) * 0.1;
+                    node.y += (node.targetY - node.y) * 0.1;
+                    
+                    node.element.style.left = node.x + 'px';
+                    node.element.style.top = node.y + 'px';
+                });
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // Initialize network
+        const network = new InteractiveNetwork();
+        
+        // System time update
+        function updateSystemTime() {
+            const now = new Date();
+            const timeString = now.toISOString().substr(11, 8) + ' UTC';
+            document.getElementById('systemTime').textContent = timeString;
+        }
+        
+        // Random system stats
+        function updateSystemStats() {
+            const latency = Math.floor(Math.random() * 20) + 10;
+            const connections = Math.floor(Math.random() * 1000) + 2000;
+            
+            document.getElementById('latencyDisplay').textContent = latency + 'ms';
+            document.getElementById('connectionCount').textContent = connections;
+        }
+        
+        // Form interaction
+        document.getElementById('accessForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            // Animation sequence
+            button.innerHTML = '<span class="relative z-10 tracking-wider animate-pulse">建立连接中...</span>';
+            button.disabled = true;
+            
+            // Activate all nodes
+            setTimeout(() => {
+                network.nodes.forEach((node, index) => {
+                    setTimeout(() => {
+                        network.activateNode(node);
+                    }, index * 100);
+                });
+            }, 500);
+            
+            // Success feedback
+            setTimeout(() => {
+                button.innerHTML = '<span class="relative z-10 tracking-wider text-neon-lime">神经连接成功!</span>';
+                button.style.background = 'linear-gradient(135deg, rgba(0, 255, 0, 0.3), rgba(0, 255, 255, 0.3))';
+            }, 3000);
+            
+            // Reset
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                button.style.background = '';
+            }, 5000);
+        });
+        
+        // Touch events for mobile
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            network.createMouseTrail(touch.clientX, touch.clientY);
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            network.createMouseTrail(touch.clientX, touch.clientY);
+        });
+        
+        // Initialize timers
+        updateSystemTime();
+        updateSystemStats();
+        setInterval(updateSystemTime, 1000);
+        setInterval(updateSystemStats, 3000);
+        
+        // Performance optimization for mobile
+        if (window.innerWidth < 768) {
+            // Reduce animation frequency
+            const originalCreateMouseTrail = network.createMouseTrail;
+            let trailThrottle = 0;
+            
+            network.createMouseTrail = function(x, y) {
+                if (trailThrottle % 3 === 0) {
+                    originalCreateMouseTrail.call(this, x, y);
+                }
+                trailThrottle++;
+            };
+        }
+    </script>
+</body>
+</html>

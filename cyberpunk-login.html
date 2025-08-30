@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博朋克登录 - CYBER LOGIN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            blue: '#0080ff',
+                            purple: '#8000ff',
+                            pink: '#ff0080',
+                            green: '#00ff80',
+                            orange: '#ff8000',
+                            teal: '#00ff80'
+                        }
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'code': ['Source Code Pro', 'monospace']
+                    },
+                    animation: {
+                        'matrix': 'matrix 20s linear infinite',
+                        'scan': 'scan 2s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'circuit': 'circuit 4s linear infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Source+Code+Pro:wght@400;500;700&display=swap');
+        
+        @keyframes matrix {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        @keyframes scan {
+            0%, 100% { transform: translateY(-100%); opacity: 0; }
+            50% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse-glow {
+            from {
+                text-shadow: 
+                    0 0 5px currentColor,
+                    0 0 10px currentColor,
+                    0 0 15px currentColor,
+                    0 0 20px currentColor;
+            }
+            to {
+                text-shadow: 
+                    0 0 10px currentColor,
+                    0 0 20px currentColor,
+                    0 0 30px currentColor,
+                    0 0 40px currentColor,
+                    0 0 50px currentColor;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes circuit {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .matrix-char {
+            position: absolute;
+            color: #00ff80;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 18px;
+            opacity: 0.7;
+            animation: matrix linear infinite;
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0080ff, transparent);
+            animation: scan 3s ease-in-out infinite;
+            box-shadow: 0 0 10px #0080ff;
+        }
+        
+        .cyber-border {
+            position: relative;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, rgba(0, 128, 255, 0.1), rgba(128, 0, 255, 0.1), rgba(255, 0, 128, 0.1));
+            background-clip: padding-box;
+        }
+        
+        .cyber-border::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            padding: 2px;
+            background: linear-gradient(45deg, #0080ff, #8000ff, #ff0080, #00ff80);
+            border-radius: inherit;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: xor;
+            -webkit-mask-composite: xor;
+        }
+        
+        .hologram-input {
+            background: rgba(0, 128, 255, 0.05);
+            border: 1px solid rgba(0, 128, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .hologram-input:focus {
+            background: rgba(0, 128, 255, 0.1);
+            border-color: #0080ff;
+            box-shadow: 
+                0 0 20px rgba(0, 128, 255, 0.3),
+                inset 0 0 20px rgba(0, 128, 255, 0.1);
+        }
+        
+        .cyber-button {
+            background: linear-gradient(135deg, #0080ff, #8000ff);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:active {
+            transform: scale(0.98);
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #0080ff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .hexagon {
+            width: 60px;
+            height: 34.64px;
+            background: rgba(0, 128, 255, 0.1);
+            position: relative;
+            margin: 17.32px 0;
+            border: 1px solid rgba(0, 128, 255, 0.3);
+        }
+        
+        .hexagon:before,
+        .hexagon:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+        }
+        
+        .hexagon:before {
+            bottom: 100%;
+            border-bottom: 17.32px solid rgba(0, 128, 255, 0.1);
+        }
+        
+        .hexagon:after {
+            top: 100%;
+            border-top: 17.32px solid rgba(0, 128, 255, 0.1);
+        }
+        
+        @media (max-width: 640px) {
+            .matrix-char {
+                font-size: 14px;
+            }
+            .hexagon {
+                width: 40px;
+                height: 23px;
+                margin: 11.5px 0;
+            }
+            .hexagon:before,
+            .hexagon:after {
+                border-left-width: 20px;
+                border-right-width: 20px;
+            }
+            .hexagon:before {
+                border-bottom-width: 11.5px;
+            }
+            .hexagon:after {
+                border-top-width: 11.5px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black overflow-x-hidden relative">
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrixBg"></div>
+    
+    <!-- Scan Lines -->
+    <div class="scan-line" style="top: 20%; animation-delay: 0s;"></div>
+    <div class="scan-line" style="top: 60%; animation-delay: 1.5s;"></div>
+    
+    <!-- Interactive Hexagon Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0" id="hexGrid">
+        <svg class="w-full h-full opacity-20">
+            <defs>
+                <pattern id="hexPattern" x="0" y="0" width="100" height="87" patternUnits="userSpaceOnUse">
+                    <polygon points="50,0 93.3,25 93.3,62 50,87 6.7,62 6.7,25" 
+                             fill="none" 
+                             stroke="rgba(0, 128, 255, 0.3)" 
+                             stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hexPattern)"/>
+        </svg>
+    </div>
+    
+    <!-- Floating Geometric Elements -->
+    <div class="fixed inset-0 pointer-events-none z-0" id="floatingElements">
+        <div class="absolute top-1/4 left-1/4 hexagon animate-float" style="animation-delay: 0s;"></div>
+        <div class="absolute top-3/4 right-1/4 hexagon animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/6 hexagon animate-float" style="animation-delay: 4s;"></div>
+    </div>
+    
+    <!-- Circuit Lines -->
+    <svg class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-30">
+        <path d="M0,50 Q200,50 400,200 T800,300" 
+              stroke="url(#circuitGradient)" 
+              stroke-width="2" 
+              fill="none"
+              stroke-dasharray="10,5"
+              class="animate-circuit"/>
+        <path d="M100,0 Q300,100 500,50 T900,100" 
+              stroke="url(#circuitGradient)" 
+              stroke-width="2" 
+              fill="none"
+              stroke-dasharray="10,5"
+              class="animate-circuit"
+              style="animation-delay: 1s;"/>
+        <defs>
+            <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#0080ff;stop-opacity:0"/>
+                <stop offset="50%" style="stop-color:#0080ff;stop-opacity:1"/>
+                <stop offset="100%" style="stop-color:#8000ff;stop-opacity:0"/>
+            </linearGradient>
+        </defs>
+    </svg>
+    
+    <!-- Main Content -->
+    <div class="relative z-10 min-h-screen flex flex-col justify-center py-8 px-4 sm:py-12 sm:px-6 lg:px-8">
+        <div class="mx-auto w-full max-w-md">
+            <!-- Logo/Title -->
+            <div class="text-center mb-6 sm:mb-8">
+                <h1 class="font-cyber text-4xl sm:text-6xl font-black text-cyber-blue animate-pulse-glow mb-4">
+                    CYBER
+                </h1>
+                <div class="relative mb-4">
+                    <h2 class="font-code text-lg sm:text-xl text-cyber-green tracking-widest">
+                        NEURAL INTERFACE
+                    </h2>
+                    <div class="absolute -inset-2 bg-gradient-to-r from-transparent via-cyber-green/20 to-transparent animate-pulse"></div>
+                </div>
+                <div class="mt-3 sm:mt-4 text-cyber-orange font-code text-xs sm:text-sm animate-pulse">
+                    &gt;&gt; 神经连接协议已激活
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="mx-auto w-full max-w-md">
+            <div class="cyber-border rounded-lg p-6 sm:p-8 backdrop-blur-md bg-black/60 relative">
+                <!-- Holographic Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-cyber-blue/5 via-transparent to-cyber-purple/5 rounded-lg pointer-events-none"></div>
+                
+                <form class="space-y-6 relative z-10" id="loginForm">
+                    <!-- Username Field -->
+                    <div class="space-y-2">
+                        <label for="username" class="block text-xs sm:text-sm font-bold text-cyber-green font-code tracking-wider">
+                            用户标识 // USER_ID
+                        </label>
+                        <div class="relative">
+                            <input id="username" 
+                                   name="username" 
+                                   type="text" 
+                                   required 
+                                   class="hologram-input w-full px-4 py-2 sm:py-3 bg-transparent text-white font-code text-base sm:text-lg placeholder-gray-400 focus:outline-none rounded-md transition-all duration-300"
+                                   placeholder="输入神经标识码..."
+                                   autocomplete="username">
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-blue animate-pulse text-lg">▋</div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="space-y-2">
+                        <label for="password" class="block text-xs sm:text-sm font-bold text-cyber-green font-code tracking-wider">
+                            神经密钥 // NEURAL_KEY
+                        </label>
+                        <div class="relative">
+                            <input id="password" 
+                                   name="password" 
+                                   type="password" 
+                                   required 
+                                   class="hologram-input w-full px-4 py-2 sm:py-3 bg-transparent text-white font-code text-base sm:text-lg placeholder-gray-400 focus:outline-none rounded-md transition-all duration-300"
+                                   placeholder="输入加密密钥..."
+                                   autocomplete="current-password">
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-blue animate-pulse text-lg">▋</div>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                        <div class="flex items-center">
+                            <input id="remember" 
+                                   name="remember" 
+                                   type="checkbox" 
+                                   class="h-3 w-3 sm:h-4 sm:w-4 bg-transparent border-2 border-cyber-blue rounded focus:ring-cyber-blue focus:ring-2 text-cyber-blue">
+                            <label for="remember" class="ml-2 block text-xs sm:text-sm text-cyber-teal font-code">
+                                保持连接
+                            </label>
+                        </div>
+                        <div class="text-xs sm:text-sm">
+                            <a href="#" class="font-code text-cyber-orange hover:text-cyber-pink transition-colors duration-300 hover:animate-pulse-glow">
+                                重置神经密钥?
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Login Button -->
+                    <div>
+                        <button type="submit" 
+                                class="cyber-button w-full flex justify-center py-3 px-4 border-0 text-base sm:text-lg font-bold font-cyber text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyber-blue transition-all duration-300 hover:shadow-lg hover:shadow-cyber-blue/50">
+                            <span class="relative z-10 tracking-wider">启动神经连接</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- System Status -->
+                <div class="mt-6 text-center border-t border-cyber-blue/30 pt-4">
+                    <div class="text-cyber-green font-code text-xs leading-relaxed space-y-1">
+                        <div class="animate-pulse">&gt; 系统状态: <span class="text-cyber-teal">在线</span></div>
+                        <div class="animate-pulse" style="animation-delay: 0.5s;">&gt; 加密级别: <span class="text-cyber-orange">量子-256</span></div>
+                        <div class="animate-pulse" style="animation-delay: 1s;">&gt; 连接延迟: <span class="text-cyber-pink" id="latency">12ms</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Corner HUD Elements -->
+    <div class="fixed top-2 left-2 sm:top-4 sm:left-4 text-cyber-blue font-code text-xs z-20">
+        <div class="animate-pulse">[<span id="currentTime">00:00:00</span>]</div>
+    </div>
+    <div class="fixed top-2 right-2 sm:top-4 sm:right-4 text-cyber-green font-code text-xs z-20">
+        <div class="animate-pulse">[SECURE_LINK]</div>
+    </div>
+    <div class="fixed bottom-2 left-2 sm:bottom-4 sm:left-4 text-cyber-orange font-code text-xs z-20">
+        <div class="animate-pulse">[v3.1.4]</div>
+    </div>
+    <div class="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 text-cyber-pink font-code text-xs z-20">
+        <div class="animate-pulse">[NEURAL_NET]</div>
+    </div>
+
+    <script>
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrixBg');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            function createChar() {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                char.style.opacity = Math.random() * 0.8 + 0.2;
+                matrixBg.appendChild(char);
+                
+                setTimeout(() => {
+                    if (char.parentNode) {
+                        char.parentNode.removeChild(char);
+                    }
+                }, 5000);
+            }
+            
+            // Create initial chars
+            for (let i = 0; i < 50; i++) {
+                setTimeout(createChar, i * 100);
+            }
+            
+            // Continue creating chars
+            setInterval(createChar, 200);
+        }
+
+        // Mouse interaction with hexagons
+        document.addEventListener('mousemove', (e) => {
+            const hexagons = document.querySelectorAll('.hexagon');
+            hexagons.forEach(hex => {
+                const rect = hex.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2));
+                
+                if (distance < 100) {
+                    hex.style.borderColor = 'rgba(0, 128, 255, 0.8)';
+                    hex.style.background = 'rgba(0, 128, 255, 0.2)';
+                    hex.style.transform = 'scale(1.1)';
+                } else {
+                    hex.style.borderColor = 'rgba(0, 128, 255, 0.3)';
+                    hex.style.background = 'rgba(0, 128, 255, 0.1)';
+                    hex.style.transform = 'scale(1)';
+                }
+            });
+        });
+
+        // Particle system for interactions
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            document.body.appendChild(particle);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 3 + 1;
+            const life = 2000;
+            
+            const animation = particle.animate([
+                { 
+                    transform: 'translate(0, 0) scale(1)', 
+                    opacity: 1 
+                },
+                { 
+                    transform: `translate(${Math.cos(angle) * speed * 50}px, ${Math.sin(angle) * speed * 50}px) scale(0)`, 
+                    opacity: 0 
+                }
+            ], {
+                duration: life,
+                easing: 'ease-out'
+            });
+            
+            animation.onfinish = () => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            };
+        }
+
+        // Click interaction
+        document.addEventListener('click', (e) => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createParticle(
+                        e.clientX + (Math.random() - 0.5) * 20,
+                        e.clientY + (Math.random() - 0.5) * 20
+                    );
+                }, i * 50);
+            }
+        });
+
+        // Input field interactions
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentNode.classList.add('relative');
+                if (!this.parentNode.querySelector('.input-glow')) {
+                    const glow = document.createElement('div');
+                    glow.className = 'input-glow absolute inset-0 bg-cyber-blue/20 rounded-md animate-pulse pointer-events-none';
+                    this.parentNode.appendChild(glow);
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                const glow = this.parentNode.querySelector('.input-glow');
+                if (glow) {
+                    glow.remove();
+                }
+            });
+            
+            input.addEventListener('input', function() {
+                // Add typing effect
+                createParticle(
+                    this.getBoundingClientRect().right - 20,
+                    this.getBoundingClientRect().top + this.getBoundingClientRect().height / 2
+                );
+            });
+        });
+
+        // Time update
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0];
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        
+        // Latency simulation
+        function updateLatency() {
+            const latency = Math.floor(Math.random() * 20) + 8;
+            document.getElementById('latency').textContent = latency + 'ms';
+        }
+
+        // Form submission effect
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<span class="relative z-10 tracking-wider animate-pulse">连接中...</span>';
+            button.disabled = true;
+            
+            // Create connection effect
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createParticle(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight
+                    );
+                }, i * 100);
+            }
+            
+            setTimeout(() => {
+                button.innerHTML = '<span class="relative z-10 tracking-wider text-cyber-green">连接成功!</span>';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }, 1500);
+            }, 3000);
+        });
+
+        // Touch interactions for mobile
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            createParticle(touch.clientX, touch.clientY);
+        });
+
+        // Initialize
+        createMatrixRain();
+        updateTime();
+        updateLatency();
+        
+        setInterval(updateTime, 1000);
+        setInterval(updateLatency, 3000);
+        
+        // Performance optimization for mobile
+        if (window.innerWidth < 768) {
+            // Reduce particle frequency on mobile
+            const originalCreateChar = createChar;
+            createChar = function() {
+                if (Math.random() > 0.5) {
+                    originalCreateChar();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
