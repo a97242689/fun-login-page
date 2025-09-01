@@ -57,6 +57,7 @@
             pointer-events: all;
             z-index: 1;
             cursor: grab;
+            will-change: transform, top, left;
         }
         
         .balloon-body {
@@ -89,7 +90,7 @@
         
         @keyframes floatUp {
             0% {
-                transform: translateY(0px) translateX(0px) rotate(0deg);
+                transform: translateY(0px) translateX(0px) rotate(var(--start-rotate, 0deg));
                 opacity: 0;
             }
             5% {
@@ -136,9 +137,9 @@
         }
         
         @keyframes balloonPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); opacity: 0.8; }
-            100% { transform: scale(0.1); opacity: 0; }
+            0% { transform: rotate(var(--pop-rotate, 0deg)) scale(1); }
+            50% { transform: rotate(var(--pop-rotate, 0deg)) scale(1.3); opacity: 0.8; }
+            100% { transform: rotate(var(--pop-rotate, 0deg)) scale(0.1); opacity: 0; }
         }
         
         @keyframes balloonFall {
@@ -559,16 +560,16 @@
         // 优化气球生成系统
         function startBalloonSystem() {
             let balloonCount = 0;
-            const maxBalloons = 8; // 限制最大气球数量
+            const maxBalloons = 12; // 增加最大气球数量
             
             setInterval(() => {
                 // 检查当前气球数量
                 const currentBalloons = document.querySelectorAll('.balloon').length;
                 
-                if (currentBalloons < maxBalloons && Math.random() < 0.7) {
+                if (currentBalloons < maxBalloons && Math.random() < 0.8) {
                     createBalloon();
                 }
-            }, 3000 + Math.random() * 4000);
+            }, 1500 + Math.random() * 2000); // 缩短生成间隔到1.5-3.5秒
         }
         
         // 启动气球系统
@@ -579,9 +580,9 @@
         // 立即生成几个气球作为初始效果
         setTimeout(() => {
             createBalloon();
-        }, 2000);
-        setTimeout(() => createBalloon(), 4000);
-        setTimeout(() => createBalloon(), 6000);
+        }, 1000); // 缩短到1秒
+        setTimeout(() => createBalloon(), 2500); // 缩短到2.5秒
+        setTimeout(() => createBalloon(), 4000); // 缩短到4秒
         
         // 气球交互功能
         function addBalloonInteraction(balloon, duration) {
@@ -609,39 +610,37 @@
                 }
             });
             
-            // 鼠标按下开始拖拽或双击检测
+            // 鼠标按下立即开始拖拽（仅左键）
             balloon.addEventListener('mousedown', function(e) {
-                clickCount++;
-                
-                if (clickCount === 1) {
-                    // 保存第一次点击的事件信息
-                    const savedEvent = {
-                        clientX: e.clientX,
-                        clientY: e.clientY,
-                        target: e.target
-                    };
-                    
-                    clickTimer = setTimeout(() => {
-                        // 单击 - 开始拖拽
-                        startDrag(savedEvent);
-                        // 动态添加事件监听器
-                        document.addEventListener('mousemove', handleMouseMove);
-                        document.addEventListener('mouseup', handleMouseUp);
-                        clickCount = 0;
-                    }, 250); // 250ms内没有第二次点击就是单击
-                } else if (clickCount === 2) {
-                    // 双击 - 气球爆炸
-                    clearTimeout(clickTimer);
-                    popBalloon();
-                    clickCount = 0;
-                }
-                
+                if (e.button !== 0) return;
+                startDrag(e);
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
                 e.preventDefault();
+            });
+
+            // 使用原生双击事件触发爆炸
+            balloon.addEventListener('dblclick', function() {
+                popBalloon();
             });
             
             function startDrag(e) {
                 // 先获取当前实际位置
                 const rect = balloon.getBoundingClientRect();
+                // 读取当前旋转角度，拖拽时保持该角度，避免线条变垂直
+                const computedStyle = window.getComputedStyle(balloon);
+                const matrix = computedStyle.transform;
+                let currentRotateDeg = 0;
+                if (matrix && matrix !== 'none') {
+                    const values = matrix.match(/matrix\(([^)]+)\)/);
+                    if (values && values[1]) {
+                        const parts = values[1].split(',').map(v => parseFloat(v));
+                        const a = parts[0];
+                        const b = parts[1];
+                        const angle = Math.atan2(b, a);
+                        currentRotateDeg = angle * 180 / Math.PI;
+                    }
+                }
                 
                 isDragging = true;
                 
@@ -649,7 +648,8 @@
                 balloon.style.top = rect.top + 'px';
                 balloon.style.left = rect.left + 'px';
                 balloon.style.bottom = 'auto';
-                balloon.style.transform = 'none'; // 清除任何transform
+                // 保持当前旋转角度，但移除位移
+                balloon.style.transform = `rotate(${currentRotateDeg}deg)`;
                 
                 // 然后移除动画类
                 balloon.classList.add('balloon-dragging');
@@ -673,12 +673,29 @@
             function popBalloon() {
                 balloonPopCount++;
                 
-                // 立即获取当前位置并固定
+                // 立即获取当前位置与当前旋转角度并固定
                 const rect = balloon.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(balloon);
+                const matrix = computedStyle.transform;
+                let currentRotateDeg = 0;
+                if (matrix && matrix !== 'none') {
+                    // 从 transform matrix 推导旋转角度
+                    const values = matrix.match(/matrix\(([^)]+)\)/);
+                    if (values && values[1]) {
+                        const parts = values[1].split(',').map(v => parseFloat(v));
+                        const a = parts[0];
+                        const b = parts[1];
+                        const angle = Math.atan2(b, a); // 弧度
+                        currentRotateDeg = angle * 180 / Math.PI;
+                    }
+                }
                 balloon.style.top = rect.top + 'px';
                 balloon.style.left = rect.left + 'px';
                 balloon.style.bottom = 'auto';
-                balloon.style.transform = 'none';
+                // 冻结当前角度，供爆炸动画使用
+                balloon.style.setProperty('--pop-rotate', currentRotateDeg + 'deg');
+                // 在动画开始前保持当前旋转，避免先变直
+                balloon.style.transform = `rotate(${currentRotateDeg}deg)`;
                 
                 // 停止所有动画和交互
                 balloon.classList.remove('balloon-floating', 'balloon-hover', 'balloon-paused', 'balloon-dragging');
@@ -696,54 +713,73 @@
             function createBalloonFragments(originalBalloon) {
                 const rect = originalBalloon.getBoundingClientRect();
                 const container = document.getElementById('balloon-container');
+                const popRotate = originalBalloon.style.getPropertyValue('--pop-rotate') || '0deg';
                 
-                // 创建气球线碎片（与原始线条样式一致）
-                const balloonString = document.createElement('div');
-                balloonString.style.cssText = `
+                // 使用旋转包装器，保证初始角度不被动画覆盖
+                const stringWrapper = document.createElement('div');
+                stringWrapper.style.cssText = `
                     position: fixed;
                     left: ${rect.left + 20}px;
                     top: ${rect.top + 50}px;
-                    width: 1px;
-                    height: 60px;
-                    background: linear-gradient(to bottom, rgba(150,150,150,0.8), rgba(150,150,150,0.3));
                     z-index: 1000;
                     pointer-events: none;
                     transform-origin: top center;
+                    transform: rotate(${popRotate});
                 `;
-                
-                container.appendChild(balloonString);
-                
-                // 随机选择一个线条下落动画
+                container.appendChild(stringWrapper);
+
+                const balloonString = document.createElement('div');
+                balloonString.style.cssText = `
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 1px;
+                    height: 60px;
+                    background: linear-gradient(to bottom, rgba(150,150,150,0.8), rgba(150,150,150,0.3));
+                    transform-origin: top center;
+                `;
+                stringWrapper.appendChild(balloonString);
+
+                // 随机选择一个线条下落动画（加在子元素上）
                 const randomAnimation = balloonConfig.stringAnimations[Math.floor(Math.random() * balloonConfig.stringAnimations.length)];
                 balloonString.classList.add(randomAnimation);
-                
-                // 优化线条清理
-                const stringCleanup = () => balloonString.parentNode?.removeChild(balloonString);
+
+                // 优化线条清理（清理包装器）
+                const stringCleanup = () => stringWrapper.parentNode?.removeChild(stringWrapper);
                 setTimeout(stringCleanup, 3000);
                 
-                // 创建3-5个气球碎片
+                // 创建碎片旋转包装器，保持初始角度
+                const fragmentWrapper = document.createElement('div');
+                fragmentWrapper.style.cssText = `
+                    position: fixed;
+                    left: ${rect.left}px;
+                    top: ${rect.top}px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    transform: rotate(${popRotate});
+                `;
+                container.appendChild(fragmentWrapper);
+
+                // 创建3-5个气球碎片（动画加在子元素上）
                 const fragmentCount = 3 + Math.floor(Math.random() * 3);
-                
                 for (let i = 0; i < fragmentCount; i++) {
                     const fragment = document.createElement('div');
                     fragment.style.cssText = `
-                        position: fixed;
-                        left: ${rect.left + Math.random() * 40}px;
-                        top: ${rect.top + Math.random() * 50}px;
+                        position: absolute;
+                        left: ${Math.random() * 40}px;
+                        top: ${Math.random() * 50}px;
                         width: ${5 + Math.random() * 10}px;
                         height: ${5 + Math.random() * 10}px;
                         background: ${['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'][Math.floor(Math.random() * 5)]};
                         border-radius: 50%;
-                        z-index: 1000;
                         pointer-events: none;
                     `;
-                    
-                    container.appendChild(fragment);
-                    
+                    fragmentWrapper.appendChild(fragment);
                     fragment.classList.add('balloon-falling');
-                    const fragmentCleanup = () => fragment.parentNode?.removeChild(fragment);
-                    setTimeout(fragmentCleanup, 2000);
                 }
+
+                const fragmentWrapperCleanup = () => fragmentWrapper.parentNode?.removeChild(fragmentWrapper);
+                setTimeout(fragmentWrapperCleanup, 2000);
                 
                 // 创建惊喜文字效果
                 createSurpriseText(rect, container);
@@ -802,32 +838,54 @@
                 }
             };
             
-            const handleMouseUp = () => {
+            const handleMouseUp = (e) => {
+                // 只响应左键松开
+                if (e && e.button !== 0 && e.button !== undefined) return;
+                
                 if (isDragging) {
                     isDragging = false;
                     balloon.classList.remove('balloon-dragging');
                     
                     const currentRect = balloon.getBoundingClientRect();
-                    const remainingHeight = currentRect.top + 100;
+                    const remainingHeight = window.innerHeight - currentRect.top;
                     
-                    const minSpeed = 30;
-                    const remainingTime = Math.max(remainingHeight / minSpeed, 0.5);
+                    // 计算剩余上升时间，确保气球能继续上升
+                    const minSpeed = 50; // 增加上升速度
+                    const remainingTime = Math.max(remainingHeight / minSpeed, 1.0);
                     
-                    if (remainingHeight < 20) {
+                    if (remainingHeight < 50) {
+                        // 如果气球太接近顶部，直接移除
                         balloon.parentNode?.removeChild(balloon);
                         document.removeEventListener('mousemove', handleMouseMove);
                         document.removeEventListener('mouseup', handleMouseUp);
                         return;
                     }
                     
+                    // 设置气球继续上升的位置、角度与动画
                     balloon.style.top = currentRect.top + 'px';
                     balloon.style.left = currentRect.left + 'px';
+                    // 读取当前角度，作为新一段上升动画的起始角度
+                    const cs = window.getComputedStyle(balloon);
+                    const m = cs.transform;
+                    let deg = 0;
+                    if (m && m !== 'none') {
+                        const match = m.match(/matrix\(([^)]+)\)/);
+                        if (match && match[1]) {
+                            const [a,b] = match[1].split(',').map(v => parseFloat(v));
+                            deg = Math.atan2(b, a) * 180 / Math.PI;
+                        }
+                    }
+                    balloon.style.setProperty('--start-rotate', deg + 'deg');
                     balloon.style.setProperty('--duration', remainingTime + 's');
                     
-                    balloon.classList.remove('balloon-floating');
-                    requestAnimationFrame(() => {
-                        balloon.classList.add('balloon-floating');
-                    });
+                    // 平滑重启动画，避免闪烁：保持起始 transform，与 0% 帧一致
+                    balloon.classList.add('balloon-floating');
+                    balloon.style.transform = `translate(0px, 0px) rotate(${deg}deg)`;
+                    balloon.style.animation = 'none';
+                    void balloon.offsetWidth; // 强制重排，重置动画
+                    balloon.style.animation = '';
+                    // 清理内联 transform，让动画接管
+                    balloon.style.transform = '';
                     
                     // 清理事件监听器
                     document.removeEventListener('mousemove', handleMouseMove);
